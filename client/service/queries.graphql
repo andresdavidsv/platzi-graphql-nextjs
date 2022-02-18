@@ -1,0 +1,33 @@
+query GetAllAvos {
+  avos {
+    id
+    image
+    name
+    createdAt
+    sku
+    price
+    attributes {
+      description
+      taste
+      shape
+      hardiness
+    }
+  }
+}
+
+query GetAvo($avoId: ID!) {
+  avo(id: $avoId) {
+    id
+    image
+    name
+    createdAt
+    sku
+    price
+    attributes {
+      description
+      taste
+      shape
+      hardiness
+    }
+  }
+}

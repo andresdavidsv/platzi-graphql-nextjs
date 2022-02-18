@@ -4,6 +4,8 @@ import Layout from '@components/Layout/Layout'
 import { Card } from 'semantic-ui-react'
 import KawaiiHeader from '@components/KawaiiHeader/KawaiiHeader'
 
+import { useGetAllAvosQuery, useGetAvoQuery } from '../service/graphql'
+
 const avocadoFragment = `
   id
   image
@@ -42,7 +44,7 @@ const useAvocado = (id: number | string) => {
 
 const HomePage = () => {
   const [isEnabled, setIsEnabled] = useState(false)
-  const { data, loading } = useAvocados()
+  const { data, loading } = useGetAllAvosQuery()
   console.log({ data, loading })
 
   return (
@@ -68,7 +70,11 @@ const HomePage = () => {
 }
 
 function ChildComponent() {
-  const { data, loading } = useAvocado(1)
+  const { data, loading } = useGetAvoQuery({
+    variables: {
+      avoId: '1',
+    },
+  })
   console.log('Single avocado', { data, loading })
   return <p>Mounted</p>
 }
