@@ -1,51 +1,40 @@
-import { useQuery, gql } from '@apollo/client'
 import React, { useState } from 'react'
+import type { GetStaticProps, InferGetStaticPropsType } from 'next'
 import Layout from '@components/Layout/Layout'
 import { Card } from 'semantic-ui-react'
 import KawaiiHeader from '@components/KawaiiHeader/KawaiiHeader'
+import { useQuery } from '@apollo/client'
 
-import { useGetAllAvosQuery, useGetAvoQuery } from '../service/graphql'
+import client from '../service/client'
 
-const avocadoFragment = `
-  id
-  image
-  name
-  createdAt
-  sku
-  price
-  attributes {
-    description
-    taste
-    shape
-    hardiness
+import { GetAllAvosDocument, GetAvoDocument, Avocado } from '../service/graphql'
+
+export const getStaticProps: GetStaticProps<{ products: Avocado[] }> =
+  async () => {
+    try {
+      const response = await client.query({ query: GetAllAvosDocument })
+      if (response.data.avos === null) {
+        throw new Error('Failed to request')
+      }
+      const products = response.data.avos as Avocado[]
+      return {
+        props: {
+          products,
+        },
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        props: { products: [] },
+      }
+    }
   }
-`
-const useAvocados = () => {
-  const query = gql`
-    query GetAllAvos{
-      avos {
-        ${avocadoFragment}
-      }
-    }
-  `
-  return useQuery(query)
-}
 
-const useAvocado = (id: number | string) => {
-  const query = gql`
-    query GetAvo($avoId: ID!){
-      avo(id: $avoId) {
-        ${avocadoFragment}
-      }
-    }
-  `
-  return useQuery(query, { variables: { avoId: id } })
-}
-
-const HomePage = () => {
+const HomePage = ({
+  products,
+}: InferGetStaticPropsType<typeof getStaticProps>) => {
   const [isEnabled, setIsEnabled] = useState(false)
-  const { data, loading } = useGetAllAvosQuery()
-  console.log({ data, loading })
+  console.log({ products })
 
   return (
     <Layout title="Home">
@@ -70,11 +59,13 @@ const HomePage = () => {
 }
 
 function ChildComponent() {
-  const { data, loading } = useGetAvoQuery({
-    variables: {
-      avoId: '1',
-    },
-  })
+  const { data, loading } = useQuery(
+    GetAvoDocument({
+      variables: {
+        avoId: '1',
+      },
+    })
+  )
   console.log('Single avocado', { data, loading })
   return <p>Mounted</p>
 }
